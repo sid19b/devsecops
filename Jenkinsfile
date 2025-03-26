@@ -32,7 +32,7 @@ pipeline{
         stage('Building Docker Image'){
             steps{
                 script{
-                    app=docker.build("buggyapp")
+                    app=docker.build("devsecops/buggyapp")
                 }
             }
         }
