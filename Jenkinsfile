@@ -40,7 +40,7 @@ pipeline{
         stage('Pushing docker image to ECR/registry'){
             steps{
                 script{
-                    docker.withRegistry('https://008971657113.dkr.ecr.ap-south-1.amazonaws.com/devsecops','cloud_credentials'){
+                    docker.withRegistry('https://008971657113.dkr.ecr.ap-south-1.amazonaws.com/devsecops','ecr:ap-south-1:cloud_credentials'){
                         app.push('latest')
                         app.push("${env.build_number}")
                     }
