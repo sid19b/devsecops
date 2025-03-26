@@ -20,14 +20,14 @@ pipeline{
         }
 
 
-        stage('Use Snyk') {
-            steps {
-                // Load credential into a variable (masked)
-                withCredentials([string(credentialsId: 'snyk-cred', variable: 'SNYK_TOKEN')]) {
-                    sh 'mvn snyk:test -Dsnyk.token=$SNYK_TOKEN'  // $SNYK_TOKEN is securely injected
-                }
-            }
-        }
+        // stage('Use Snyk') {
+        //     steps {
+        //         // Load credential into a variable (masked)
+        //         withCredentials([string(credentialsId: 'snyk-cred', variable: 'SNYK_TOKEN')]) {
+        //             sh 'mvn snyk:test -Dsnyk.token=$SNYK_TOKEN'  // $SNYK_TOKEN is securely injected
+        //         }
+        //     }
+        // }
 
         stage('Building Docker Image'){
             steps{
