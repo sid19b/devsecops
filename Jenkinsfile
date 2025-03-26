@@ -1,42 +1,59 @@
-pipeline {
-  agent any
-  tools { 
-        maven 'Maven_3_5_2'  
+pipeline{
+    agent any
+    tools{
+        maven 'Maven_3.2.5'   //tools block is case sensitive
     }
-   stages{
-    stage('CompileandRunSonarAnalysis') {
-            steps {	
-		sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=asgbuggywebapp -Dsonar.organization=asgbuggywebapp -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=932558e169d66a8f1d1adf470b908a46156f5844'
-			}
+    environment{
+        SONAR_TOKEN=credentials('sonar-token')
     }
-
-	stage('RunSCAAnalysisUsingSnyk') {
-            steps {		
-				withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
-					sh 'mvn snyk:test -fn'
-				}
-			}
-    }
-
-	stage('Build') { 
-            steps { 
-               withDockerRegistry([credentialsId: "dockerlogin", url: ""]) {
-                 script{
-                 app =  docker.build("asg")
-                 }
-               }
+    stages{
+        stage('Compile and run sonar analysis'){
+            steps{
+                sh '''
+                    mvn clean verify sonar:sonar \
+                    -Dsonar.projectKey=devsecops19 \
+                    -Dsonar.organization=devsecops19 \
+                    -Dsonar.host.url=https://sonarcloud.io \
+                    -Dsonar.login=$SONAR_TOKEN
+                '''
             }
-    }
+        }
 
-	stage('Push') {
+
+        stage('Use Snyk') {
             steps {
+                // Load credential into a variable (masked)
+                withCredentials([string(credentialsId: 'snyk-cred', variable: 'SNYK_TOKEN')]) {
+                    sh 'mvn snyk:test -Dsnyk.token=$SNYK_TOKEN'  // $SNYK_TOKEN is securely injected
+                }
+            }
+        }
+
+        stage('Building Docker Image'){
+            steps{
                 script{
-                    docker.withRegistry('https://145988340565.dkr.ecr.us-west-2.amazonaws.com', 'ecr:us-west-2:aws-credentials') {
-                    app.push("latest")
+                    app=docker.build("008971657113.dkr.ecr.ap-south-1.amazonaws.com/devsecops/devsecops/buggyapp:latest")
+                }
+            }
+        }
+
+        stage('Pushing docker image to ECR/registry'){
+            steps{
+                script{
+                    docker.withRegistry('https://008971657113.dkr.ecr.ap-south-1.amazonaws.com/devsecops','cloud_credentials'){
+                        app.push('latest')
+                        app.push("${env.build_number}")
                     }
                 }
             }
-    	}
-	    
-  }
+        }
+    }	
+    post{
+        success{
+            echo "Pipeline succeeded"
+        }
+        failure{
+            echo "pipeline failed"
+        }
+    }
 }
