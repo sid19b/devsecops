@@ -32,7 +32,7 @@ pipeline{
         stage('Building Docker Image'){
             steps{
                 script{
-                    app=docker.build("008971657113.dkr.ecr.ap-south-1.amazonaws.com/devsecops/buggyapp")
+                    app=docker.build("008971657113.dkr.ecr.ap-south-1.amazonaws.com/devsecops")
                 }
             }
         }
