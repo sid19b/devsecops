@@ -32,7 +32,7 @@ pipeline{
         stage('Building Docker Image'){
             steps{
                 script{
-                    app=docker.build("devsecops/buggyapp")
+                    app=docker.build("008971657113.dkr.ecr.ap-south-1.amazonaws.com/devsecops/buggyapp")
                 }
             }
         }
@@ -40,9 +40,9 @@ pipeline{
         stage('Pushing docker image to ECR/registry'){
             steps{
                 script{
-                    docker.withRegistry('https://008971657113.dkr.ecr.ap-south-1.amazonaws.com/devsecops','ecr:ap-south-1:cloud_credentials'){
+                    docker.withRegistry('https://008971657113.dkr.ecr.ap-south-1.amazonaws.com','ecr:ap-south-1:cloud_credentials'){
                         app.push('latest')
-                        app.push("${env.build_number}")
+                        app.push("${env.BUILD_NUMBER}")
                     }
                 }
             }
